@@ -10,17 +10,15 @@ import NetworkAppLibrary
 
 struct SidebarView: View {
     @Binding var rules: [Rule]
-    @Binding var rulesSelection: Set<Rule>
     @ObservedObject var rulesManager: RulesManager
     
-    init(rules: Binding<[Rule]>, rulesSelection: Binding<Set<Rule>>, rulesManager: ObservedObject<RulesManager>) {
+    init(rules: Binding<[Rule]>, rulesManager: ObservedObject<RulesManager>) {
         self._rules = rules
-        self._rulesSelection = rulesSelection
         self._rulesManager = rulesManager
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             List(selection: $rulesManager.filterSelection) {
                 Section("Filters") {
                     ForEach(RuleSelection.allCases) { selection in
@@ -31,11 +29,6 @@ struct SidebarView: View {
             }
             .frame(height: 120)
             .scrollDisabled(true)
-        
-            if (rulesSelection.isEmpty == false)
-            {
-                Text("You selected \(rulesSelection.first!.title)")
-            }
             
             List{
                 Section("Rules") {}
@@ -43,53 +36,53 @@ struct SidebarView: View {
             .scrollDisabled(true)
             .frame(height: 20)
             .buttonStyle(PlainButtonStyle()).disabled(true)
+            
             ScrollViewReader { proxy in
-                List($rules, id:\.self, selection: $rulesSelection) { $rule in
+                List($rules, id:\.self, selection: $rulesManager.selectedRule) { $rule in
                     Label(rule.title, systemImage: rule.enabled ? "togglepower" : "poweroff")
                         .tag(rule.id)
+                        .contextMenu {
+                            Button("Delete", role: .destructive) {
+                                self.rulesManager.removeRule(rule)
+                            }
+                        }
                     EmptyView()
                 }
-                .onChange(of: rulesSelection) { oldValue, newValue in
-                    
-                    if (newValue.count > 1)
+                .onChange(of: rulesManager.selectedRule) { _, newValue in
+                    // must be an animation of scroll to item
+                    if (newValue?.title == "")
                     {
-                        let oldItemCopy = oldValue.first!
-                        
-                        let oldItem = rulesSelection.first(where: { $0.id == oldItemCopy.id})!
-                        
-                        self.rulesSelection.remove(oldItem)
-                    }
-                    
-                    if (!rulesSelection.isEmpty)
-                    {
-                        self.rulesManager.changeSelection(rulesSelection.first!.id)
+                        withAnimation {
+                            proxy.scrollTo(rulesManager.rules.last, anchor: .bottom)
+                        }
                     }
                 }
-                .onChange(of: rulesManager.selectedRuleIndex, {
-
-                    
-                    /*let index = rulesManager.getFilteredArraySelectedIndex(filterSelection: rulesManager.filterSelection)
-                    let selectedRule = rules[index]
-                    if (selectedRule.title.contains("Empty rule"))
-                    {
-                        self.rulesSelection.removeAll()
-                        self.rulesSelection.insert(rules[rulesManager.getFilteredArraySelectedIndex(filterSelection: rulesManager.filterSelection)])
-                        withAnimation {
-                            proxy.scrollTo(selectedRule, anchor: .bottom)
-                        }
-                    }*/
-                })
             }
             .safeAreaInset(edge: .bottom) {
-                Button(action: {
-
-                }, label: {
-                    Label("Add Rule", systemImage: "plus.circle")
-                })
-                .buttonStyle(.borderless)
-                .foregroundColor(.accentColor)
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
+                VStack (alignment: .leading) {
+                    Rectangle()
+                        .fill(.gray)
+                        .frame(maxWidth: .infinity, minHeight: 1, idealHeight: 1, maxHeight: 1)
+                        .opacity(0.3)
+                    
+                    Button(action: {
+                        let rule = self.rulesManager.addRule("", false)
+                        self.rulesManager.changeSelection(rule: rule)
+                        
+                    }, label: {
+                        Label("Add Rule", systemImage: "plus.circle")
+                    })
+                    .buttonStyle(.borderless)
+                    .foregroundColor(.accentColor)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 19)
+                    
+                    
+                    Label("Status", systemImage: "togglepower")
+                        .padding(.top, 4)
+                        .padding(.leading, 19)
+                        .padding(.bottom, 19)
+                }
             }
         }
     }
@@ -97,13 +90,11 @@ struct SidebarView: View {
 
 #if DEBUG
 struct SidebarView_Preview : PreviewProvider {
-    @State static var rulesSelection = Set<Rule>()
-    @State static var selectedRule: Rule?
+    @State static var rulesSelection: Rule? = Rule.emptyRule()
     @ObservedObject static var rulesManager = RulesManager()
     
     static var previews: some View {
-        SidebarView(rules: .constant(Rule.examples()),
-                     rulesSelection: $rulesSelection, rulesManager: _rulesManager)
+        SidebarView(rules: .constant(Rule.examples()), rulesManager: _rulesManager)
         .listStyle(.sidebar)
     }
     

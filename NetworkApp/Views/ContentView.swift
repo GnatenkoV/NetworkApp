@@ -10,38 +10,41 @@ import NetworkAppLibrary
 
 struct ContentView: View {
     @State private var filterSelection: RuleSelection = RuleSelection.all
-    @State private var ruleSelection = Set<Rule>()
-    @ObservedObject private var rulesManager = RulesManager()
+    @ObservedObject public var rulesManager: RulesManager
     
     private func onAddRuleButtonPress() -> Void
     {
         let newRule = rulesManager.addRule("Empty rule", false)
-        rulesManager.changeSelection(newRule.id)
+        rulesManager.changeSelection(rule: newRule)
     }
     
     var body: some View {
         NavigationSplitView {
             switch rulesManager.filterSelection {
             case .all:
-                SidebarView(rules: $rulesManager.rules, rulesSelection: $ruleSelection, rulesManager: _rulesManager)
+                SidebarView(rules: $rulesManager.rules, rulesManager: _rulesManager)
             case .enabled:
-                SidebarView(rules: $rulesManager.rules.filter({ $0.enabled }), rulesSelection: $ruleSelection, rulesManager: _rulesManager)
+                SidebarView(rules: $rulesManager.rules.filter({ $0.enabled }),  rulesManager: _rulesManager)
             case .disabled:
-                SidebarView(rules: $rulesManager.rules.filter({ !$0.enabled }), rulesSelection: $ruleSelection, rulesManager: _rulesManager)
+                SidebarView(rules: $rulesManager.rules.filter({ !$0.enabled }), rulesManager: _rulesManager)
             }
             
         } detail: {
-            RuleView(rulesManager: _rulesManager, isInUse: $rulesManager.filterEnabled)
-        }
-        .onChange(of: rulesManager.filterSelection, {
-            if (ruleSelection.count > 1)
+            
+            if let rule = rulesManager.selectedRule
             {
-                ruleSelection.removeFirst()
+                // transform optional to non-optional
+                let binding = Binding { rule } set: { rulesManager.tryUpdateRule(rule: $0)}
+                RuleView(rulesManager: _rulesManager, selectedRule: binding, isInUse: $rulesManager.filterEnabled)
             }
-        })
+            else
+            {
+                Text("Select rule")
+            }
+        }
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView(rulesManager: RulesManager())
 }

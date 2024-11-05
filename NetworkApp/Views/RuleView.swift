@@ -11,77 +11,100 @@ import NetworkAppLibrary
 struct RuleView: View {
     @ObservedObject var rulesManager: RulesManager
     @Binding var isInUse: Bool
+    @Binding var selectedRule: Rule
     
-    @State private var title: String
-    @State private var bundleID: String
-    @State private var enabled: Bool
-    
-    init(rulesManager: ObservedObject<RulesManager>, isInUse: Binding<Bool>)
+    init(rulesManager: ObservedObject<RulesManager>, selectedRule: Binding<Rule>, isInUse: Binding<Bool>)
     {
         self._isInUse = isInUse
         self._rulesManager = rulesManager
-        
-        let rule = rulesManager.wrappedValue.rules[rulesManager.wrappedValue.selectedRuleIndex]
-        
-        self.enabled = rule.enabled
-        self.title = rule.title
-        self.bundleID = rule.bundleID
+        self._selectedRule = selectedRule
     }
     
     var body: some View {
-        Grid{
+        Grid (alignment: .leading) {
             GridRow {
                 Text("Title")
-                TextField("", text: self.$title)
-                .frame(width: 140)
-                .multilineTextAlignment(.leading)
+                    .gridCellAnchor(.leading)
+                TextField("", text: self.$selectedRule.title)
+                    .frame(width: 140)
+                    .multilineTextAlignment(.leading)
+                    .cornerRadius(5)
+                
             }
             
             GridRow {
                 Text("BundleID")
-                TextField("", text: self.$bundleID)
-                .frame(width: 140)
-                .multilineTextAlignment(.leading)
-            }
-            
-            GridRow {
-                Toggle("Enabled", isOn: self.$enabled)
+                    .gridCellAnchor(.leading)
+                TextField("", text: self.$selectedRule.bundleID)
+                    .frame(width: 140)
+                    .multilineTextAlignment(.leading)
+                    .cornerRadius(5)
+                    .gridCellAnchor(.leading)
                     .gridCellColumns(1)
-                    
             }
             
             GridRow {
-                Button(action: {
-                    rulesManager.rules[rulesManager.selectedRuleIndex].title = self.title
-                    rulesManager.rules[rulesManager.selectedRuleIndex].enabled = self.enabled
-                    rulesManager.rules[rulesManager.selectedRuleIndex].bundleID = self.bundleID
-                }, label: {
-                    Text("Save")
-                })
-                .gridCellColumns(2)
-                .gridColumnAlignment(.leading)
-                .gridCellAnchor(.leading)
+                List(self.selectedRule.endpoints.indices, id:\.self) { index in
+                    HStack {
+                        Button( action: {
+                            selectedRule.endpoints.remove(at: index)
+                        }, label: {
+                            Image(systemName: "minus.circle")
+                                .imageScale(.medium)
+                                .frame(width: 10, height: 18)
+                        })
+                        .buttonStyle(.borderless)
+                        .foregroundColor(.accentColor)
+                        
+                        TextField("", text: self.$selectedRule.endpoints[index])
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .padding(2)
+                    }
+                    EmptyView()
+                }
+                .padding(.leading, 0)
+                .cornerRadius(12)
+                .listStyle(.sidebar)
+                .gridCellColumns(3)
+                .safeAreaInset(edge: .bottom) {
+                    Button(action: {
+                        self.selectedRule.endpoints.append("")
+                    }, label: {
+                        Label("Add endpoint", systemImage: "plus.circle")
+                    })
+                    .buttonStyle(.borderless)
+                    .foregroundColor(.accentColor)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            
+            GridRow {
+                Toggle("Enabled", isOn: self.$selectedRule.enabled)
+                    .gridCellAnchor(.leading)
+                    .gridCellColumns(1)
+                
             }
         }
         .padding(10)
-        .onChange(of: self.rulesManager.selectedRuleIndex, {
-            let rule = rulesManager.rules[rulesManager.selectedRuleIndex]
-            
-            self.enabled = rule.enabled
-            self.title = rule.title
-            self.bundleID = rule.bundleID
-        })
     }
 }
-
+    
 #if DEBUG
 struct RuleView_Preview : PreviewProvider {
-    @ObservedObject static var ruleManager : RulesManager = RulesManager()
+    @ObservedObject static var rulesManager : RulesManager = RulesManager()
     @State static var isInUse = false
     
     static var previews: some View {
-        RuleView(rulesManager: _ruleManager, isInUse: $isInUse)
+        if let rule = rulesManager.selectedRule
+        {
+            // transform optional to non-optional
+            let binding = Binding { rule } set: { rulesManager.selectedRule = $0 }
+            RuleView(rulesManager: _rulesManager, selectedRule: binding, isInUse: $isInUse)
+        }
+        else
+        {
+            Text("Select rule")
+        }
     }
-    
 }
 #endif

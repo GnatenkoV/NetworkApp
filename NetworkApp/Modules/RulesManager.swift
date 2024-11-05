@@ -14,8 +14,8 @@ public class RulesManager: NSObject, ObservableObject {
     @Published public var installedApplicationBundleIds: [String]
     @Published public var networkFilterEnabled: Bool
     @Published public var filterEnabled: Bool = false
-    @Published public var selectedRuleIndex: Int = 0
     @Published public var filterSelection: RuleSelection = RuleSelection.all
+    @Published public var selectedRule: Rule?
     
     private var persistance : Persistance
     
@@ -51,7 +51,6 @@ public class RulesManager: NSObject, ObservableObject {
     }
     
     public func addRule(_ title: String, _ enabled: Bool = false) -> Rule {
-        
         let rule = Rule(title: title, bundleID: "", enabled: enabled, endpoints: [])
         
         addRule(rule)
@@ -59,52 +58,46 @@ public class RulesManager: NSObject, ObservableObject {
         return rule
     }
     
+    public func changeSelection(rule: Rule?, index: Int = -1) -> Void {
+        var ruleIndex: Int = index
+        if (ruleIndex < 0)
+        {
+            for i in 0..<rules.count {
+                if (rules[i].id == rule?.id) {
+                    ruleIndex = i
+                    break
+                }
+            }
+        }
+        
+        if (ruleIndex >= 0)
+        {
+            self.selectedRule = rules[ruleIndex]
+        }
+    }
+    
     public func removeRule(_ rule: Rule) -> Void {
         self.rules.removeAll(where: { $0.id == rule.id })
     }
     
-    public func changeSelection(_ id: UUID) -> Void {
-        guard let index = rules.firstIndex(where: { $0.id == id}) else { return }
-        
-        self.selectedRuleIndex = index
-    }
-    
-    public func getFilteredArraySelectedIndex(filterSelection: RuleSelection) -> Int
-    {
-        var index = 0
-        
+    public func tryUpdateRule(rule: Rule) {
         for i in 0..<rules.count {
-            switch (filterSelection) {
-            case .all:
-                return self.selectedRuleIndex
-            case .enabled:
-                if (rules[i].enabled)
-                {
-                    index += 1
-                }
+            if (rules[i].id == rule.id) {
+                Rule.update(ruleOut: &rules[i], ruleIn: rule)
+                
+                changeSelection(rule: rule)
+                
                 break
-            case .disabled:
-                if (!rules[i].enabled)
-                {
-                    index += 1
-                }
-                break
-            }
-            
-            if (rules[i].id == rules[selectedRuleIndex].id)
-            {
-                return index - 1
             }
         }
         
-        return 0
     }
     
-    private func loadRules() -> Void {
+    public func loadRules() -> Void {
         self.rules = persistance.loadRules()
     }
     
-    private func saveRules() -> Void {
+    public func saveRules() -> Void {
         persistance.saveRules(self.rules)
     }
 }
