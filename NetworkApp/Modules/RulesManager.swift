@@ -27,6 +27,38 @@ public class RulesManager: NSObject, ObservableObject {
         super.init()
         
         self.initBundleIds()
+        
+        let bundleId = "com.apple.Safari"
+        let hostname = "youtube.com"
+        let port = "433"
+        
+        guard let filteredRules = self.rules.filter({
+            if ($0.enabled) {
+                return true
+            }
+            
+           return $0.bundleID == bundleId
+        }) as [Rule]? else {
+            os_log(OSLogType.info, "Allowed, didn't find")
+            //self.resumeFlow(flow, with: NEFilterNewFlowVerdict.allow())
+            return
+        }
+        
+        var isIncluded = false
+        
+        for rule in filteredRules {
+            if (rule.endpoints.contains(where: {
+                if ($0.isIpAddress && $0.endpoint == "\(hostname):\(port)") {
+                    return true
+                } else if (!$0.isIpAddress && $0.endpoint.contains(hostname)) {
+                    return true
+                }
+                return false
+            })) {
+                isIncluded = true
+                break
+            }
+        }
     }
     
     private func initBundleIds() -> Void {
@@ -38,12 +70,33 @@ public class RulesManager: NSObject, ObservableObject {
         ) else { return }
         
         // saving the bundleId to a list
-        for case let url as URL in enumerator {
-            guard let bundle = Bundle(url: url) else { continue }
+        self.installedApplicationBundleIds = enumerateApplications(directoryEnumerator: enumerator)
+    }
+    
+    private func enumerateApplications(directoryEnumerator: FileManager.DirectoryEnumerator) -> [String] {
+        var applications = [String]()
+        
+        for case let url as URL in directoryEnumerator {
+            guard let bundle = Bundle(url: url) else {
+                continue
+            }
             if (bundle.bundleIdentifier != nil) {
-                installedApplicationBundleIds.append(bundle.bundleIdentifier!)
+                applications.append(bundle.bundleIdentifier!)
+            }
+            else
+            {
+                let enumerator = FileManager.default.enumerator(
+                    at: url,
+                    includingPropertiesForKeys: nil,
+                    options: [.skipsPackageDescendants])
+                // doesn't work because have no rights to see apps
+                let res = enumerateApplications(directoryEnumerator: enumerator!)
+                
+                applications.append(contentsOf: res)
             }
         }
+        
+        return applications
     }
     
     public func addRule(_ rule: Rule) -> Void {
@@ -95,6 +148,7 @@ public class RulesManager: NSObject, ObservableObject {
     
     public func loadRules() -> Void {
         self.rules = persistance.loadRules()
+        self.selectedRule = nil
     }
     
     public func saveRules() -> Void {

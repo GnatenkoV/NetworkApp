@@ -11,6 +11,8 @@ import NetworkAppLibrary
 struct ContentView: View {
     @State private var filterSelection: RuleSelection = RuleSelection.all
     @ObservedObject public var rulesManager: RulesManager
+    @ObservedObject public var installationManager: InstallationManager
+    @ObservedObject public var filterManager: FilterManager
     
     private func onAddRuleButtonPress() -> Void
     {
@@ -22,11 +24,11 @@ struct ContentView: View {
         NavigationSplitView {
             switch rulesManager.filterSelection {
             case .all:
-                SidebarView(rules: $rulesManager.rules, rulesManager: _rulesManager)
+                SidebarView(rules: $rulesManager.rules, rulesManager: _rulesManager, installationManager: _installationManager, filterManager: _filterManager)
             case .enabled:
-                SidebarView(rules: $rulesManager.rules.filter({ $0.enabled }),  rulesManager: _rulesManager)
+                SidebarView(rules: $rulesManager.rules.filter({ $0.enabled }),  rulesManager: _rulesManager, installationManager: _installationManager, filterManager: _filterManager)
             case .disabled:
-                SidebarView(rules: $rulesManager.rules.filter({ !$0.enabled }), rulesManager: _rulesManager)
+                SidebarView(rules: $rulesManager.rules.filter({ !$0.enabled }), rulesManager: _rulesManager, installationManager: _installationManager, filterManager: _filterManager)
             }
             
         } detail: {
@@ -39,12 +41,12 @@ struct ContentView: View {
             }
             else
             {
-                Text("Select rule")
+                Text("Select Rule")
             }
         }
     }
 }
 
 #Preview {
-    ContentView(rulesManager: RulesManager())
+    ContentView(rulesManager: RulesManager(), installationManager: InstallationManager(), filterManager: FilterManager())
 }

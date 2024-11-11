@@ -11,10 +11,14 @@ import NetworkAppLibrary
 struct SidebarView: View {
     @Binding var rules: [Rule]
     @ObservedObject var rulesManager: RulesManager
+    @ObservedObject var installationManager: InstallationManager
+    @ObservedObject var filterManager: FilterManager
     
-    init(rules: Binding<[Rule]>, rulesManager: ObservedObject<RulesManager>) {
+    init(rules: Binding<[Rule]>, rulesManager: ObservedObject<RulesManager>, installationManager: ObservedObject<InstallationManager>, filterManager: ObservedObject<FilterManager>) {
         self._rules = rules
         self._rulesManager = rulesManager
+        self._installationManager = installationManager
+        self._filterManager = filterManager
     }
     
     var body: some View {
@@ -77,8 +81,13 @@ struct SidebarView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 19)
                     
+                    Label("Installed", systemImage: installationManager.status.iconName)
+                        .help(Text(installationManager.status.tooltip))
+                        .padding(.top, 4)
+                        .padding(.leading, 19)
                     
-                    Label("Status", systemImage: "togglepower")
+                    Label("Filter status", systemImage: filterManager.status.iconName)
+                        .help(Text(filterManager.status.tooltip))
                         .padding(.top, 4)
                         .padding(.leading, 19)
                         .padding(.bottom, 19)
@@ -92,9 +101,11 @@ struct SidebarView: View {
 struct SidebarView_Preview : PreviewProvider {
     @State static var rulesSelection: Rule? = Rule.emptyRule()
     @ObservedObject static var rulesManager = RulesManager()
+    @ObservedObject static var installationManager = InstallationManager()
+    @ObservedObject static var filterManager = FilterManager()
     
     static var previews: some View {
-        SidebarView(rules: .constant(Rule.examples()), rulesManager: _rulesManager)
+        SidebarView(rules: .constant(Rule.examples()), rulesManager: _rulesManager, installationManager: _installationManager, filterManager: _filterManager)
         .listStyle(.sidebar)
     }
     

@@ -7,6 +7,13 @@
 
 import Foundation
 import NetworkExtension
+import OSLog
+import NetworkAppLibrary
+
+os_log(OSLogType.info, "Start extension")
+
+// create app folder
+Persistance().createIfNotExists()
 
 autoreleasepool {
     NEProvider.startSystemExtensionMode()

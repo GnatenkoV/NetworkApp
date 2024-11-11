@@ -6,14 +6,17 @@
 //
 
 import SwiftUI
+import NetworkExtension
 
 @main
 struct NetworkExtensionApp: App {
     @ObservedObject var rulesManager = RulesManager()
+    @ObservedObject var installationManager = InstallationManager()
+    @ObservedObject var filterManager = FilterManager()
     
     var body: some Scene {
         WindowGroup {
-            ContentView(rulesManager: rulesManager)
+            ContentView(rulesManager: rulesManager, installationManager: installationManager, filterManager: filterManager)
         }
         .commands {
             CommandMenu("Rule")
@@ -23,49 +26,43 @@ struct NetworkExtensionApp: App {
                     let rule = self.rulesManager.addRule("", false)
                     self.rulesManager.changeSelection(rule: rule)
                 }
-                .cornerRadius(5)
                 .keyboardShortcut(KeyEquivalent("n"))
                 
                 Button("Save Rules")
                 {
                     self.rulesManager.saveRules()
+                    self.filterManager.restart()
                 }
-                .cornerRadius(5)
                 .keyboardShortcut(KeyEquivalent("s"))
                 
                 Button("Restore Rules")
                 {
                     self.rulesManager.loadRules()
                 }
-                .cornerRadius(5)
                 .keyboardShortcut(KeyEquivalent("z"))
             }
             
             CommandMenu("Extension")
             {
                 Button("Install", action: {
-                    
+                    self.installationManager.install()
                 })
-                .cornerRadius(5)
-                .keyboardShortcut(KeyEquivalent("i"))
+                .keyboardShortcut(KeyEquivalent("i"), modifiers: [.command])
                 
                 Button("Uninstall", action: {
-                    
+                    self.installationManager.uninstall()
                 })
-                .cornerRadius(5)
-                .keyboardShortcut(KeyEquivalent("u"))
+                .keyboardShortcut(KeyEquivalent("u"), modifiers: [.command])
                 
                 Button("Start", action: {
-                    
+                    self.filterManager.start()
                 })
-                .cornerRadius(5)
-                .keyboardShortcut(KeyEquivalent("r"))
+                .keyboardShortcut(KeyEquivalent("i"), modifiers: [.command, .shift])
                 
                 Button("Stop", action: {
-                    
+                    self.filterManager.stop()
                 })
-                .cornerRadius(5)
-                .keyboardShortcut(KeyEquivalent("q"))
+                .keyboardShortcut(KeyEquivalent("u"), modifiers: [.command, .shift])
             }
         }
     }
