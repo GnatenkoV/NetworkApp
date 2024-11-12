@@ -1,10 +1,3 @@
-//
-//  FilterDataProvider.swift
-//  NetworkAppExtension
-//
-//  Created by user on 01.11.2024.
-//
-
 import NetworkExtension
 import OSLog
 import NetworkAppLibrary
@@ -15,11 +8,15 @@ class FilterDataProvider: NEFilterDataProvider {
     
     override func startFilter(completionHandler: @escaping (Error?) -> Void) {
         os_log(OSLogType.info, "Start filter")
-        
         self.rules = persistance.loadRules()
         
         var filterRules = [NEFilterRule]()
         var usedEndpoints = [String]()
+        
+        if (rules.isEmpty) {
+            completionHandler(RulesApplyError.rulesListEmpty)
+            return
+        }
         
         for i in 0..<rules.count {
             let rule = rules[i]
@@ -38,7 +35,7 @@ class FilterDataProvider: NEFilterDataProvider {
                 
                 usedEndpoints.append(endpoint.endpoint)
                 
-                os_log(OSLogType.info, "Rule added %{public}@", endpoint.endpoint)
+                os_log(OSLogType.info, "Watching endpoint: %{public}@", endpoint.endpoint)
                 
                 if (Utils.isDomain(address: endpoint.endpoint) && !endpoint.isIpAddress) {
                     hostConf = NWHostEndpoint(hostname: endpoint.endpoint, port: "0")
@@ -98,7 +95,7 @@ class FilterDataProvider: NEFilterDataProvider {
                 
                return $0.bundleID == bundleId
             }) as [Rule]? else {
-                os_log(OSLogType.info, "Allowed, didn't find")
+                os_log(OSLogType.debug, "Allowed, didn't find")
                 self.resumeFlow(flow, with: NEFilterNewFlowVerdict.allow())
                 return
             }
@@ -122,9 +119,9 @@ class FilterDataProvider: NEFilterDataProvider {
             let verdict = isIncluded ? NEFilterNewFlowVerdict.drop() : NEFilterNewFlowVerdict.allow()
             
             if (isIncluded) {
-                os_log(OSLogType.info, "Denied")
+                os_log(OSLogType.info, "Denied, remote endpoint %{public}@ (%{public}@), bundleId: %{public}@", remoteEndpoint, hostname, bundleId)
             } else {
-                os_log(OSLogType.info, "Allowed")
+                os_log(OSLogType.info, "Allowed, remote endpoint %{public}@ (%{public}@), bundleId: %{public}@", remoteEndpoint, hostname, bundleId)
             }
             
             self.resumeFlow(flow, with: verdict)

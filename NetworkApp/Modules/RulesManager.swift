@@ -1,10 +1,3 @@
-//
-//  RulesManager.swift
-//  NetworkApp
-//
-//  Created by user on 01.11.2024.
-//
-
 import Foundation
 import OSLog
 import NetworkAppLibrary
@@ -16,6 +9,7 @@ public class RulesManager: NSObject, ObservableObject {
     @Published public var filterEnabled: Bool = false
     @Published public var filterSelection: RuleSelection = RuleSelection.all
     @Published public var selectedRule: Rule?
+    @Published public var rulesChanged = false
     
     private var persistance : Persistance
     
@@ -27,38 +21,6 @@ public class RulesManager: NSObject, ObservableObject {
         super.init()
         
         self.initBundleIds()
-        
-        let bundleId = "com.apple.Safari"
-        let hostname = "youtube.com"
-        let port = "433"
-        
-        guard let filteredRules = self.rules.filter({
-            if ($0.enabled) {
-                return true
-            }
-            
-           return $0.bundleID == bundleId
-        }) as [Rule]? else {
-            os_log(OSLogType.info, "Allowed, didn't find")
-            //self.resumeFlow(flow, with: NEFilterNewFlowVerdict.allow())
-            return
-        }
-        
-        var isIncluded = false
-        
-        for rule in filteredRules {
-            if (rule.endpoints.contains(where: {
-                if ($0.isIpAddress && $0.endpoint == "\(hostname):\(port)") {
-                    return true
-                } else if (!$0.isIpAddress && $0.endpoint.contains(hostname)) {
-                    return true
-                }
-                return false
-            })) {
-                isIncluded = true
-                break
-            }
-        }
     }
     
     private func initBundleIds() -> Void {
@@ -101,6 +63,8 @@ public class RulesManager: NSObject, ObservableObject {
     
     public func addRule(_ rule: Rule) -> Void {
         rules.append(rule)
+        
+        self.rulesChanged = true
     }
     
     public func addRule(_ title: String, _ enabled: Bool = false) -> Rule {
@@ -133,25 +97,28 @@ public class RulesManager: NSObject, ObservableObject {
         self.rules.removeAll(where: { $0.id == rule.id })
     }
     
-    public func tryUpdateRule(rule: Rule) {
+    public func tryUpdateRule(rule: Rule) -> Bool {
+        var updated = false
         for i in 0..<rules.count {
             if (rules[i].id == rule.id) {
-                Rule.update(ruleOut: &rules[i], ruleIn: rule)
+                updated = Rule.update(ruleOut: &rules[i], ruleIn: rule)
                 
                 changeSelection(rule: rule)
                 
                 break
             }
         }
-        
+        return updated
     }
     
     public func loadRules() -> Void {
         self.rules = persistance.loadRules()
         self.selectedRule = nil
+        self.rulesChanged = false
     }
     
     public func saveRules() -> Void {
         persistance.saveRules(self.rules)
+        self.rulesChanged = false
     }
 }

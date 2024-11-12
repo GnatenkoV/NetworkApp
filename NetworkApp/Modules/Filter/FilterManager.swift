@@ -11,26 +11,35 @@ public class FilterManager: NSObject, ObservableObject {
     }
     
     public func updateStatus() -> Void {
-        if (NEFilterManager.shared().isEnabled) {
-            self.status = FilterStatus.started
-        } else {
-            self.status = FilterStatus.stopped
+        self.status = FilterStatus.pending
+        
+        let filterManager = NEFilterManager.shared()
+        filterManager.loadFromPreferences { loadError in
+            DispatchQueue.main.async {
+                if let error = loadError {
+                    os_log(OSLogType.fault, "Failed to load the filter configuration: %@", error.localizedDescription)
+                    self.status = FilterStatus.stopped
+                    return
+                }
+                
+                if (NEFilterManager.shared().isEnabled) {
+                    self.status = FilterStatus.started
+                } else {
+                    self.status = FilterStatus.stopped
+                }
+            }
         }
     }
     
     public func restart() -> Void {
-        DispatchQueue.main.async {
-            if (self.status != FilterStatus.stopped) {
-                self.stop()
-            }
-            
-            sleep(1)
-            
+        if (self.status != FilterStatus.stopped) {
+            self.stop({ self.start() })
+        } else {
             self.start()
         }
     }
     
-    public func start() -> Void {
+    public func start(_ callback: (() -> Void)? = nil) -> Void {
         self.status = FilterStatus.pending
         let filterManager = NEFilterManager.shared()
         
@@ -55,19 +64,21 @@ public class FilterManager: NSObject, ObservableObject {
                 filterManager.saveToPreferences { saveError in
                     DispatchQueue.main.async {
                         if let error = saveError {
-                            os_log("Failed to save the filter configuration: %@", error.localizedDescription)
+                            os_log(OSLogType.fault, "Failed to save the filter configuration: %@", error.localizedDescription)
                             self.status = FilterStatus.stopped
+                            callback?()
                             return
                         }
-                        
+                                                
                         self.status = FilterStatus.started
+                        callback?()
                     }
                 }
             }
         }
     }
     
-    public func stop() {
+    public func stop(_ callback: (() -> Void)? = nil) {
         self.status = FilterStatus.pending
         let filterManager = NEFilterManager.shared()
 
@@ -84,12 +95,14 @@ public class FilterManager: NSObject, ObservableObject {
                 filterManager.saveToPreferences { saveError in
                     DispatchQueue.main.async {
                         if let error = saveError {
-                            os_log("Failed to disable the filter configuration: %@", error.localizedDescription)
+                            os_log(OSLogType.fault, "Failed to disable the filter configuration: %@", error.localizedDescription)
                             self.status = FilterStatus.started
+                            callback?()
                             return
                         }
                         
                         self.status = FilterStatus.stopped
+                        callback?()
                     }
                 }
             }

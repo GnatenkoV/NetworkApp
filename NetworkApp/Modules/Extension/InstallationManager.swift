@@ -35,35 +35,7 @@ class InstallationManager: NSObject, ObservableObject
     
     public func getExtensionStatus() -> ExtensionStatus
     {
-        do
-        {
-            let url = URL(fileURLWithPath: "/Library/SystemExtensions/db.plist")
-            let data = try Data(contentsOf: url)
-            
-            let decoder = PropertyListDecoder()
-            let list = try! decoder.decode(ExtensionsPropertyList.self, from: data)
-            
-            for ext in list.extensions
-            {
-                if (ext.identifier != extensionBundleId) {
-                    continue
-                }
-                
-                if (ext.state == "activated_enabled") {
-                    return ExtensionStatus.installed
-                }
-                else if (ext.state == "activated_waiting_for_user")
-                {
-                    return ExtensionStatus.wait_approve
-                }
-            }
-        }
-        catch let error
-        {
-            os_log("%@", error.localizedDescription)
-        }
-        
-        return ExtensionStatus.uninstalled
+        return ExtensionUtils.getExtensionStatus(extensionBundleId: extensionBundleId)
     }
     
     public func install() -> Void

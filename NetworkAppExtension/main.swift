@@ -10,9 +10,7 @@ import NetworkExtension
 import OSLog
 import NetworkAppLibrary
 
-os_log(OSLogType.info, "Start extension")
-
-// create app folder
+// create app folder + rules.json
 Persistance().createIfNotExists()
 
 autoreleasepool {

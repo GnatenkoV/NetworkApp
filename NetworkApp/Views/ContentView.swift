@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  NetworkExtension
-//
-//  Created by user on 01.11.2024.
-//
-
 import SwiftUI
 import NetworkAppLibrary
 
@@ -36,7 +29,12 @@ struct ContentView: View {
             if let rule = rulesManager.selectedRule
             {
                 // transform optional to non-optional
-                let binding = Binding { rule } set: { rulesManager.tryUpdateRule(rule: $0)}
+                let binding = Binding { rule } set: {
+                    if (rulesManager.tryUpdateRule(rule: $0)) {
+                        rulesManager.rulesChanged = true
+                    }
+                    
+                }
                 RuleView(rulesManager: _rulesManager, selectedRule: binding, isInUse: $rulesManager.filterEnabled)
             }
             else

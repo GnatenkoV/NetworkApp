@@ -1,10 +1,3 @@
-//
-//  NetworkExtensionApp.swift
-//  NetworkExtension
-//
-//  Created by user on 01.11.2024.
-//
-
 import SwiftUI
 import NetworkExtension
 
@@ -32,6 +25,7 @@ struct NetworkExtensionApp: App {
                 {
                     self.rulesManager.saveRules()
                     self.filterManager.restart()
+                    self.filterManager.updateStatus()
                 }
                 .keyboardShortcut(KeyEquivalent("s"))
                 

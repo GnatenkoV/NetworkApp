@@ -1,10 +1,3 @@
-//
-//  SidebarView.swift
-//  NetworkApp
-//
-//  Created by user on 01.11.2024.
-//
-
 import SwiftUI
 import NetworkAppLibrary
 
@@ -13,6 +6,7 @@ struct SidebarView: View {
     @ObservedObject var rulesManager: RulesManager
     @ObservedObject var installationManager: InstallationManager
     @ObservedObject var filterManager: FilterManager
+    @State var showSaveButton = false
     
     init(rules: Binding<[Rule]>, rulesManager: ObservedObject<RulesManager>, installationManager: ObservedObject<InstallationManager>, filterManager: ObservedObject<FilterManager>) {
         self._rules = rules
@@ -63,7 +57,7 @@ struct SidebarView: View {
                 }
             }
             .safeAreaInset(edge: .bottom) {
-                VStack (alignment: .leading) {
+                VStack (alignment: .leading, spacing: 14) {
                     Rectangle()
                         .fill(.gray)
                         .frame(maxWidth: .infinity, minHeight: 1, idealHeight: 1, maxHeight: 1)
@@ -83,14 +77,37 @@ struct SidebarView: View {
                     
                     Label("Installed", systemImage: installationManager.status.iconName)
                         .help(Text(installationManager.status.tooltip))
-                        .padding(.top, 4)
                         .padding(.leading, 19)
                     
                     Label("Filter status", systemImage: filterManager.status.iconName)
                         .help(Text(filterManager.status.tooltip))
-                        .padding(.top, 4)
                         .padding(.leading, 19)
-                        .padding(.bottom, 19)
+                    
+                    VStack(alignment: .leading, spacing: 14) {
+                        Button(action: {
+                            self.rulesManager.saveRules()
+                            self.filterManager.restart()
+                            self.filterManager.updateStatus()
+                        }, label: {
+                            Text("Save changes")
+                        })
+                        .frame(alignment: .leading)
+                        
+                        Button(action: {
+                            self.rulesManager.loadRules()
+                        }, label: {
+                            Text("Restore changes")
+                        })
+                        .frame(alignment: .leading)
+                    }
+                    .frame(alignment: .leading)
+                    .padding(.leading, 19)
+                    .padding(.bottom, showSaveButton ? 14 : -60)
+                    .onChange(of: rulesManager.rulesChanged) { _, newValue in
+                        withAnimation {
+                            showSaveButton = newValue
+                        }
+                    }
                 }
             }
         }

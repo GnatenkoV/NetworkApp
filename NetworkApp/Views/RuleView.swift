@@ -1,10 +1,3 @@
-//
-//  AddRuleView.swift
-//  NetworkApp
-//
-//  Created by user on 01.11.2024.
-//
-
 import SwiftUI
 import NetworkAppLibrary
 

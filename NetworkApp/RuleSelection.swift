@@ -1,10 +1,3 @@
-//
-//  RuleSelection.swift
-//  NetworkApp
-//
-//  Created by user on 01.11.2024.
-//
-
 public enum RuleSelection: Identifiable, CaseIterable, Hashable {
     case all
     case enabled
