@@ -14,23 +14,27 @@ struct NetworkExtensionApp: App {
         .commands {
             CommandMenu("Rule")
             {
-                Button("Add New Rule")
-                {
+                Button("Add New Rule") {
                     let rule = self.rulesManager.addRule("", false)
                     self.rulesManager.changeSelection(rule: rule)
                 }
                 .keyboardShortcut(KeyEquivalent("n"))
                 
-                Button("Save Rules")
-                {
+                Button("Remove Selected Rule") {
+                    if (self.rulesManager.selectedRule != nil) {
+                        self.rulesManager.removeRule(self.rulesManager.selectedRule!)
+                        self.rulesManager.selectedRule = nil
+                    }
+                }.keyboardShortcut(KeyEquivalent("r"))
+                
+                Button("Save Rules") {
                     self.rulesManager.saveRules()
                     self.filterManager.restart()
                     self.filterManager.updateStatus()
                 }
                 .keyboardShortcut(KeyEquivalent("s"))
                 
-                Button("Restore Rules")
-                {
+                Button("Restore Rules") {
                     self.rulesManager.loadRules()
                 }
                 .keyboardShortcut(KeyEquivalent("z"))

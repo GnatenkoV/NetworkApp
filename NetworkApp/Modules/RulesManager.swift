@@ -94,6 +94,10 @@ public class RulesManager: NSObject, ObservableObject {
     }
     
     public func removeRule(_ rule: Rule) -> Void {
+        
+        if (self.rules.contains(where: {$0.id == rule.id})) {
+            self.rulesChanged = true
+        }
         self.rules.removeAll(where: { $0.id == rule.id })
     }
     
