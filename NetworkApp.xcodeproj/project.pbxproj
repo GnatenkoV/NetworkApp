@@ -81,7 +81,7 @@
 		CEA9BF6D2CD4FB0300EBD8E3 /* com.apriorit.networkextension.sysext.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = com.apriorit.networkextension.sysext.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEA9BF6F2CD4FB0300EBD8E3 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		CEA9C0402CD52F3D00EBD8E3 /* NetworkAppLibrary.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = NetworkAppLibrary.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		CEA9C04D2CD52FD100EBD8E3 /* NetworkAppLibrary */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = NetworkAppLibrary; path = ../NetworkAppLibrary; sourceTree = SOURCE_ROOT; };
+		CEA9C04D2CD52FD100EBD8E3 /* NetworkAppLibrary */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = NetworkAppLibrary; path = NetworkAppLibrary; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
