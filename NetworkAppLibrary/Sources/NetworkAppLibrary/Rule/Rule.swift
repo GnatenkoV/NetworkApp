@@ -6,15 +6,7 @@ public struct Rule : Identifiable, Hashable, Codable {
     public var enabled: Bool
     public var bundleID: String
     public var endpoints: Array<Endpoint>
-    
-    private enum CodingKeys: String, CodingKey {
-        case id = "id"
-        case title = "title"
-        case enabled = "enabled"
-        case bundleID = "bundleID"
-        case endpoints = "endpoints"
-    }
-    
+
     public init(title: String, bundleID: String, enabled: Bool, endpoints: [Endpoint] = []) {
         self.title = title
         self.enabled = enabled

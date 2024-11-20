@@ -54,16 +54,16 @@ class FilterDataProvider: NEFilterDataProvider {
                 
                 filterRules.append(NEFilterRule(networkRule: networkRule, action: .filterData))
             }
-            
-            // Allow all flows that do not match the filter rules.
-            let filterSettings = NEFilterSettings(rules: filterRules, defaultAction: .allow)
-            
-            apply(filterSettings) { error in
-                if let applyError = error {
-                    os_log(OSLogType.fault, "Failed to apply filter settings: %@", applyError.localizedDescription)
-                }
-                completionHandler(error)
+        }
+        
+        // Allow all flows that do not match the filter rules.
+        let filterSettings = NEFilterSettings(rules: filterRules, defaultAction: .allow)
+        
+        apply(filterSettings) { error in
+            if let applyError = error {
+                os_log(OSLogType.fault, "Failed to apply filter settings: %@", applyError.localizedDescription)
             }
+            completionHandler(error)
         }
     }
     

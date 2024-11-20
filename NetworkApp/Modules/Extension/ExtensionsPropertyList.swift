@@ -54,12 +54,4 @@ struct ExtensionsPropertyList: Decodable {
     var developerMode: Bool?
     var extensionsPolicy: [String]?
     var bootUUID: String?
-    
-    private enum CodingKeys: String, CodingKey {
-        case version = "version"
-        case extensions = "extensions"
-        case developerMode = "developerMode"
-        case extensionsPolicy = "extensionsPolicy"
-        case bootUUID = "bootUUID"
-    }
 }
