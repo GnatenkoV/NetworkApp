@@ -19,11 +19,11 @@ public class ExtensionUtils {
                 }
                 
                 if (ext.state == "activated_enabled") {
-                    return ExtensionStatus.installed
+                    return .installed
                 }
                 else if (ext.state == "activated_waiting_for_user")
                 {
-                    return ExtensionStatus.wait_approve
+                    return .wait_approve
                 }
             }
         }
@@ -32,6 +32,6 @@ public class ExtensionUtils {
             os_log(OSLogType.info, "%{public}@", error.localizedDescription)
         }
         
-        return ExtensionStatus.uninstalled
+        return .uninstalled
     }
 }

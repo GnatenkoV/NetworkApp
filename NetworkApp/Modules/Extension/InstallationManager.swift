@@ -22,7 +22,7 @@ class InstallationManager: NSObject, ObservableObject
         {
             uninstallingInProgress = true
             
-            if (status == ExtensionStatus.installed || status == ExtensionStatus.wait_approve)
+            if (status == .installed || status == .wait_approve)
             {
                 uninstall()
             }
@@ -40,7 +40,7 @@ class InstallationManager: NSObject, ObservableObject
     
     public func install() -> Void
     {
-        status = ExtensionStatus.uninstalled
+        status = .uninstalled
         
         let request = OSSystemExtensionRequest.activationRequest(forExtensionWithIdentifier: extensionBundleId, queue: DispatchQueue.main)
         request.delegate = self
@@ -52,7 +52,7 @@ class InstallationManager: NSObject, ObservableObject
     
     public func uninstall() -> Void
     {
-        status = ExtensionStatus.uninstalled
+        status = .uninstalled
         
         let request = OSSystemExtensionRequest.deactivationRequest(forExtensionWithIdentifier: extensionBundleId, queue: DispatchQueue.main)
         request.delegate = self

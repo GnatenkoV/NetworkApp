@@ -3,7 +3,7 @@ import NetworkExtension
 import OSLog
 
 public class FilterManager: NSObject, ObservableObject {
-    @Published public var status = FilterStatus.stopped
+    @Published public var status: FilterStatus = .stopped
     
     public override init() {
         super.init()
@@ -11,28 +11,28 @@ public class FilterManager: NSObject, ObservableObject {
     }
     
     public func updateStatus() -> Void {
-        self.status = FilterStatus.pending
+        self.status = .pending
         
         let filterManager = NEFilterManager.shared()
         filterManager.loadFromPreferences { loadError in
             DispatchQueue.main.async {
                 if let error = loadError {
                     os_log(OSLogType.fault, "Failed to load the filter configuration: %@", error.localizedDescription)
-                    self.status = FilterStatus.stopped
+                    self.status = .stopped
                     return
                 }
                 
                 if (NEFilterManager.shared().isEnabled) {
-                    self.status = FilterStatus.started
+                    self.status = .started
                 } else {
-                    self.status = FilterStatus.stopped
+                    self.status = .stopped
                 }
             }
         }
     }
     
     public func restart() -> Void {
-        if (self.status != FilterStatus.stopped) {
+        if (self.status != .stopped) {
             self.stop({ self.start() })
         } else {
             self.start()
@@ -40,14 +40,14 @@ public class FilterManager: NSObject, ObservableObject {
     }
     
     public func start(_ callback: (() -> Void)? = nil) -> Void {
-        self.status = FilterStatus.pending
+        self.status = .pending
         let filterManager = NEFilterManager.shared()
         
         filterManager.loadFromPreferences { loadError in
             DispatchQueue.main.async {
                 if let error = loadError {
                     os_log(OSLogType.fault, "Failed to load the filter configuration: %@", error.localizedDescription)
-                    self.status = FilterStatus.stopped
+                    self.status = .stopped
                     return
                 }
                 
@@ -65,12 +65,12 @@ public class FilterManager: NSObject, ObservableObject {
                     DispatchQueue.main.async {
                         if let error = saveError {
                             os_log(OSLogType.fault, "Failed to save the filter configuration: %@", error.localizedDescription)
-                            self.status = FilterStatus.stopped
+                            self.status = .stopped
                             callback?()
                             return
                         }
                                                 
-                        self.status = FilterStatus.started
+                        self.status = .started
                         callback?()
                     }
                 }
@@ -79,14 +79,14 @@ public class FilterManager: NSObject, ObservableObject {
     }
     
     public func stop(_ callback: (() -> Void)? = nil) {
-        self.status = FilterStatus.pending
+        self.status = .pending
         let filterManager = NEFilterManager.shared()
 
         filterManager.loadFromPreferences { loadError in
             DispatchQueue.main.async {
                 if let error = loadError {
                     os_log(OSLogType.fault, "Failed to load the filter configuration: %@", error.localizedDescription)
-                    self.status = FilterStatus.started
+                    self.status = .started
                     return
                 }
                 
@@ -96,12 +96,12 @@ public class FilterManager: NSObject, ObservableObject {
                     DispatchQueue.main.async {
                         if let error = saveError {
                             os_log(OSLogType.fault, "Failed to disable the filter configuration: %@", error.localizedDescription)
-                            self.status = FilterStatus.started
+                            self.status = .started
                             callback?()
                             return
                         }
                         
-                        self.status = FilterStatus.stopped
+                        self.status = .stopped
                         callback?()
                     }
                 }

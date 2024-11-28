@@ -1,27 +1,14 @@
 struct BundleVersionData: Decodable {
     var CFBundleShortVersionString: String
     var CFBundleVersion: String
-    
-    private enum CodingKeys: String, CodingKey {
-        case CFBundleShortVersionString = "CFBundleShortVersionString"
-        case CFBundleVersion = "CFBundleVersion"
-    }
 }
 
 struct StagedBundleURLData: Decodable {
     var relative: String
-    
-    private enum CodingKeys: String, CodingKey {
-        case relative = "relative"
-    }
 }
 
 struct ContainerData: Decodable {
     var bundlePath: String
-    
-    private enum CodingKeys: String, CodingKey {
-        case bundlePath = "bundlePath"
-    }
 }
 
 struct ExtensionData: Decodable {
@@ -34,18 +21,6 @@ struct ExtensionData: Decodable {
     var container: ContainerData?
     var uniqueID: String
     var teamID: String
-    
-    private enum CodingKeys: String, CodingKey {
-        case state = "state"
-        case categories = "categories"
-        case originPath = "originPath"
-        case bundleVersion = "bundleVersion"
-        case identifier = "identifier"
-        case stagedBundleURL = "stagedBundleURL"
-        case container = "container"
-        case uniqueID = "uniqueID"
-        case teamID = "teamID"
-    }
 }
 
 struct ExtensionsPropertyList: Decodable {
