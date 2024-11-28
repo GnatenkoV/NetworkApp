@@ -2,10 +2,8 @@ import Foundation
 import OSLog
 
 public class ExtensionUtils {
-    public static func getExtensionStatus(extensionBundleId: String) -> ExtensionStatus
-    {
-        do
-        {
+    public static func getExtensionStatus(extensionBundleId: String) -> ExtensionStatus {
+        do {
             let url = URL(fileURLWithPath: "/Library/SystemExtensions/db.plist")
             let data = try Data(contentsOf: url)
             

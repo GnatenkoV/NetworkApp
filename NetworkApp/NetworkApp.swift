@@ -7,6 +7,14 @@ struct NetworkExtensionApp: App {
     @ObservedObject var installationManager = InstallationManager()
     @ObservedObject var filterManager = FilterManager()
     
+    private func uninstallHandler(_ result: Bool) {
+        filterManager.updateStatus()
+    }
+    
+    init() {
+        installationManager.uninstallCallback = uninstallHandler
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView(rulesManager: rulesManager, installationManager: installationManager, filterManager: filterManager)

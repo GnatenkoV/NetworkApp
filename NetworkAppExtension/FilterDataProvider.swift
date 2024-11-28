@@ -75,17 +75,14 @@ class FilterDataProvider: NEFilterDataProvider {
     }
     
     override func handleNewFlow(_ flow: NEFilterFlow) -> NEFilterNewFlowVerdict {
-        guard let socketFlow = flow as? NEFilterSocketFlow,
-              let remoteEndpoint = socketFlow.remoteEndpoint as? NWHostEndpoint,
-              let localEndpoint = socketFlow.localEndpoint as? NWHostEndpoint
+        guard let remoteEndpoint = flow.endpoint,
+              let hostname = flow.hostname,
+              let bundleId = flow.bundleID
         else {
             return .allow()
         }
         
-        let bundleId = Utils.bundleIdFromDescription(flow.description)
-        let hostname = Utils.hostnameFromDescription(flow.description)
-        
-        os_log(OSLogType.info, "Got a new flow with local endpoint %{public}@ %{public}@, remote endpoint %{public}@, bundleId: %{public}@, description: %{public}@", localEndpoint, remoteEndpoint, hostname, bundleId, flow.description)
+        os_log(OSLogType.info, "Got a new flow with remote endpoint %{public}@, remote hostname %{public}@, bundleId: %{public}@, description: %{public}@", remoteEndpoint, hostname, bundleId, flow.description)
         
         Task.detached {
             guard let filteredRules = self.rules.filter({
@@ -104,7 +101,7 @@ class FilterDataProvider: NEFilterDataProvider {
             
             for rule in filteredRules {
                 if (rule.endpoints.contains(where: {
-                    if ($0.isIpAddress && $0.endpoint == "\(remoteEndpoint.hostname):\(remoteEndpoint.port)") {
+                    if ($0.isIpAddress && $0.endpoint == "\(remoteEndpoint)") {
                         return true
                     } else if (!$0.isIpAddress && hostname.contains($0.endpoint)) {
                         return true
